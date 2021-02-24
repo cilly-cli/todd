@@ -2,5 +2,9 @@ import { todd } from '..'
 
 todd.process(process.argv)
   .catch(e => {
-    console.log('Something went wrong...', e)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(e)
+    } else {
+      console.log(`${e.name}: ${e.message}`)
+    }
   })
