@@ -4,15 +4,16 @@
   "description": "A CLI tool for packaging programs into Windows/Mac/Ubuntu installers",
   "preferGlobal": true,
   "bin": {
-    "todd": "dist/bin/todd.js"
+    "todd": "dist/src/bin/todd.js"
   },
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "scripts": {
     "test": "nyc --reporter=json-summary --reporter=text mocha -r ts-node/register 'src/**/*.test.ts'",
+    "prebuild": "rm -rf dist",
     "build": "tsc",
-    "postbuild": "echo '#!/usr/bin/env node\n' | cat - dist/bin/todd.js > temp && mv temp dist/bin/todd.js",
-    "start": "ts-node src/index.ts",
+    "postbuild": "echo '#!/usr/bin/env node\n' | cat - dist/src/bin/todd.js > temp && mv temp dist/src/bin/todd.js",
+    "start": "ts-node src/bin/todd.ts",
     "prepublish": "npm run build"
   },
   "repository": {

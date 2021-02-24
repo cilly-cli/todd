@@ -1,4 +1,10 @@
-import { CliCommand } from "cilly";
+import { CliCommand } from 'cilly'
+import { config } from './config'
 
-const todd = new CliCommand("todd")
-export const msg = "Hello from todd!"
+export const todd = new CliCommand('todd')
+  .withDescription('Create an installer for your program!')
+  .withVersion(config.package.version)
+  .withHandler(() => {
+    todd.help()
+  })
+

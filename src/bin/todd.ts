@@ -1,3 +1,6 @@
-import { msg } from '../index'
+import { todd } from '..'
 
-console.log(msg)
+todd.process(process.argv)
+  .catch(e => {
+    console.log('Something went wrong...', e)
+  })
