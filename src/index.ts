@@ -1,3 +1,4 @@
-console.log("W. Hung")
+import { CliCommand } from "cilly";
 
-export const msg = "Hello from Todd in typescript!"
+const todd = new CliCommand("todd")
+export const msg = "Hello from todd!"
