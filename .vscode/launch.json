@@ -4,13 +4,13 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch demo.ts",
+      "name": "Launch Todd",
       "smartStep": true,
       "program": "${workspaceFolder}/src/bin/todd.ts",
       "preLaunchTask": "tsc: build - tsconfig.json",
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "autoAttachChildProcesses": true,
-      "args": []
+      "args": ["packer", "macos", "-rc", "./toddrc.json"]
     },
     {
       "type": "node",

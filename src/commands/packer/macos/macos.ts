@@ -1,5 +1,6 @@
 import { CliCommand } from 'cilly'
 import { readFileSync } from 'fs'
+import { getMissingPropertyPath } from '../../../utils'
 import { PackerOptions } from '../packer'
 
 interface MacOsPackerOptions extends PackerOptions {
@@ -8,13 +9,16 @@ interface MacOsPackerOptions extends PackerOptions {
 }
 
 const loadRc = (path: string): MacOsPackerOptions => {
-  const rc = JSON.parse(readFileSync(path).toString()) as { macos?: MacOsPackerOptions }
-  if (rc.macos === undefined) {
-    throw new Error(`${path} is missing its macos property.`)
-  } else if (!rc.macos.identifier) {
-    throw new Error(`${path} is missing its macos.identifier property.`)
-  } else if (!rc.macos.signature) {
-    throw new Error(`${path} is missing its macos.signature property`)
+  const rc = JSON.parse(readFileSync(path).toString()) as { macos: MacOsPackerOptions }
+  const missingProperty = getMissingPropertyPath(rc, {
+    'macos': {
+      'identifier': null,
+      'signature': null
+    }
+  })
+
+  if (missingProperty) {
+    throw new Error(`The property "${missingProperty}" is missing from ${path}.`)
   }
 
   return rc.macos
