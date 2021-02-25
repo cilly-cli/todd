@@ -1,5 +1,6 @@
 import { CliCommand } from 'cilly'
 import { brew } from './brew/brew'
+import { github } from './github/github'
 
 export interface DeployOptions {
   verbose: boolean
@@ -9,7 +10,7 @@ export interface DeployOptions {
 }
 
 export const deploy = new CliCommand('deploy')
-  .withDescription('Deploy your program')
+  .withDescription('Deploy your program to Homebrew or Snap, or create a GitHub release with your program')
   .withOptions(
     { name: ['-v', '--verbose'], description: 'Print verbosely' },
     { name: ['-d', '--dry-run'], description: 'Run as a dry run (nothing will be changed)' },
@@ -19,7 +20,7 @@ export const deploy = new CliCommand('deploy')
       ]
     }
   )
-  .withSubCommands(brew)
+  .withSubCommands(brew, github)
   .withHandler(() => {
     deploy.help()
   })
