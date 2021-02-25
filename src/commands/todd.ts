@@ -1,12 +1,12 @@
 import { CliCommand } from 'cilly'
 import { config } from '../config'
+import { deploy } from './deploy/deploy'
 import { packer } from './packer/packer'
 
 export const todd = new CliCommand('todd')
-  .withDescription('Create an installer for your program!')
+  .withDescription('Get your program to your users easily')
   .withVersion(config.package.version)
-  .withSubCommands(packer)
+  .withSubCommands(packer, deploy)
   .withHandler(() => {
     todd.help()
   })
-
