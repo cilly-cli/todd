@@ -1,5 +1,6 @@
 {
   "macos": {
-    "identifier": "com.cilly.cli"
+    "identifier": "com.cilly.cli",
+    "signature": "A_SIGNATURE"
   }
 }
