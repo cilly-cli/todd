@@ -1,17 +1,17 @@
 import { Global } from './global'
 import { yellow } from './presentation'
-import shell from 'shelljs'
+import shelljs from 'shelljs'
 
-const run = (command: string): shell.ShellString | null => {
+const run = (command: string): shelljs.ShellString | null => {
   if (Global.verbose) {
     console.log(`${yellow.bold('Shell:')} ${command}`)
   }
 
   if (Global.dryRun) return null
 
-  return shell.exec(command)
+  return shelljs.exec(command)
 }
 
-export const Shell = {
+export const shell = {
   run
 }

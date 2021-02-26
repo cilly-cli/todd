@@ -2,9 +2,11 @@ import { CliCommand, Option } from 'cilly'
 import { DeployOptions } from '../deploy'
 import { say } from '../../../presentation'
 import { readFileSync } from 'fs'
-import { Shell } from '../../../shell'
 import { Global } from '../../../global'
 import { sep } from 'path'
+import { http } from '../../../http'
+import { dryRunReleaseInfo } from './dry'
+import { AxiosRequestConfig } from 'axios'
 
 interface DeployGitHubOptions extends DeployOptions {
   version: string
@@ -18,8 +20,8 @@ interface DeployGitHubOptions extends DeployOptions {
   assets: string[]
 }
 
-interface GitHubReleaseInfo {
-  id: string
+export interface GitHubReleaseInfo {
+  id: number
   url: string
   assets_url: string
   upload_url: string
@@ -41,8 +43,7 @@ const options: Option[] = [
   { name: ['-a', '--assets'], description: 'List of paths to asset files', defaultValue: [], args: [{ name: 'paths', variadic: true }] }
 ]
 
-const buildReleaseApiUrl = (opts: DeployGitHubOptions): string => `https://api.github.com/repos/${opts.repo}/releases?access_token=${opts.accessToken}`
-const buildReleaseRequestData = (opts: DeployGitHubOptions): string => JSON.stringify({
+const buildReleaseRequestData = (opts: DeployGitHubOptions): any => ({
   tag_name: opts.version,
   target_commitish: opts.branch,
   name: opts.title,
@@ -51,55 +52,54 @@ const buildReleaseRequestData = (opts: DeployGitHubOptions): string => JSON.stri
   prerelease: opts.preRelease
 })
 
-const makeRelease = (opts: DeployGitHubOptions): GitHubReleaseInfo => {
+const makeRelease = async (opts: DeployGitHubOptions): Promise<GitHubReleaseInfo> => {
   say(`Creating release "${opts.title}" with tag ${opts.version}`)
-  const curl = Shell.run(`curl ${buildReleaseApiUrl(opts)} -d '${buildReleaseRequestData(opts)}'`)
-  const response = curl?.stdout
 
-  if (!response) {
-    if (Global.dryRun) {
-      return {
-        id: 'id',
-        url: 'url',
-        assets_url: 'assets_url',
-        upload_url: 'upload_url',
-        html_url: 'html_url',
-        author: {
-          login: 'login'
-        },
-      }
-    } else {
-      throw new Error(`Something went wrong while creating the release: ${curl?.stderr}`)
+  const payload = buildReleaseRequestData(opts)
+  const config: AxiosRequestConfig = {
+    headers: {
+      'Authorization': `token ${opts.accessToken}`
+    }
+  }
+  const release = await http.post<GitHubReleaseInfo>(`https://api.github.com/repos/${opts.repo}/releases`, payload, config)
+
+  if (Global.dryRun) {
+    return dryRunReleaseInfo
+  }
+
+  release.upload_url = release.upload_url.replace('{?name,label}', '')
+  return release
+}
+
+const uploadAsset = async (path: string, releaseInfo: GitHubReleaseInfo, accessToken: string): Promise<void> => {
+  say(`Uploading asset "${path}"...`)
+  const file = path.split(sep).pop()
+  const url = `${releaseInfo.upload_url}?name=${file}`
+  const config: AxiosRequestConfig = {
+    headers: {
+      'Authorization': `token ${accessToken}`,
+      'Content-Type': 'multipart/form-data'
     }
   }
 
-  const releaseInfo = JSON.parse(response) as GitHubReleaseInfo
-  releaseInfo.upload_url = releaseInfo.upload_url.replace('{?name,label}', '')
-  return releaseInfo
-}
-
-const uploadAsset = (path: string, releaseInfo: GitHubReleaseInfo, accessToken: string): void => {
-  say(`Uploading asset "${path}"...`)
-  const fileName = path.split(sep).pop()
-  const args = ['-sL',
-    `-H "Authorization: token ${accessToken}"`,
-    `--data-binary @"${path}"`,
-    `"${releaseInfo.upload_url}&name=${fileName}"`,
-  ]
-  Shell.run(`curl ${args.join(' ')}`)
-  return
+  const assetBuffer = readFileSync(path)
+  await http.post(url, assetBuffer, config)
 }
 
 export const github = new CliCommand('github', { inheritOpts: true })
   .withDescription('Create a GitHub release with your program as an asset')
   .withOptions(...options)
-  .withHandler((args, opts: DeployGitHubOptions) => {
+  .withHandler(async (args, opts: DeployGitHubOptions) => {
     if (opts.changelog) {
       opts.changelog = readFileSync(opts.changelog).toString()
     }
 
-    const releaseInfo = makeRelease(opts)
+    const releaseInfo = await makeRelease(opts)
+
+    say(`Successfully created release ${opts.title}!`, 'success')
+    console.log(releaseInfo)
+
     for (const asset of opts.assets) {
-      uploadAsset(asset, releaseInfo, opts.accessToken)
+      await uploadAsset(asset, releaseInfo, opts.accessToken)
     }
   })
