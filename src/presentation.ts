@@ -43,10 +43,16 @@ export const icons = {
   enter: process.platform == 'win32' ? 'ENTER' : '⎆'
 }
 
-export const say = (msg: string, mode: 'info' | 'success' | 'warning' | 'error' = 'info'): void => {
+export const say = (msg: string, mode: 'info' | 'success' | 'warning' | 'error' = 'info', print = true): string => {
   const color = mode == 'info' ? info
     : mode == 'error' ? error
       : mode == 'success' ? success : warn
 
-  console.log(`${color('Todd:')} ${msg}`)
+  msg = `${color('Todd:')} ${msg}`
+
+  if (print) {
+    console.log(msg)
+  }
+
+  return msg
 }
