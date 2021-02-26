@@ -97,7 +97,10 @@ export const github = new CliCommand('github', { inheritOpts: true })
     const releaseInfo = await makeRelease(opts)
 
     say(`Successfully created release ${opts.title}!`, 'success')
-    console.log(releaseInfo)
+
+    if (Global.verbose) {
+      console.log(releaseInfo)
+    }
 
     for (const asset of opts.assets) {
       await uploadAsset(asset, releaseInfo, opts.accessToken)

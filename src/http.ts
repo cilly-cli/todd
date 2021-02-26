@@ -35,7 +35,7 @@ const request = async <T>(method: string, fnc: any, url: string, ...args: any[])
 
 const get = async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => request('GET', axios.get, url, config)
 const head = async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => request('HEAD', axios.head, url, config)
-const _delete = async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => request('DELETE', axios.delete, url, config)
+const delet = async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => request('DELETE', axios.delete, url, config)
 const options = async <T>(url: string, config?: AxiosRequestConfig): Promise<T> => request('OPTIONS', axios.options, url, config)
 
 const post = async <T>(url: string, data: any, config?: AxiosRequestConfig): Promise<T> => request('POST', axios.post, url, data, config)
@@ -44,7 +44,7 @@ const patch = async <T>(url: string, data: any, config?: AxiosRequestConfig): Pr
 
 export const http = {
   get,
-  delete: _delete,
+  delete: delet,
   options,
   head,
   post,
