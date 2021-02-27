@@ -1,6 +1,6 @@
 import { CliCommand, Option } from 'cilly'
 import { DeployOptions } from '../deploy'
-import { say } from '../../../presentation'
+import { info, say } from '../../../presentation'
 import { readFileSync } from 'fs'
 import { Global } from '../../../global'
 import { sep } from 'path'
@@ -34,14 +34,14 @@ export interface GitHubReleaseInfo {
 }
 
 const options: Option[] = [
-  { name: ['-v', '--version'], description: 'The release version (e.g. v1.0.0) ', args: [{ name: 'version', required: true }], onProcess: promptIfUndefinedOr(promptVersion) },
-  { name: ['-t', '--title'], description: 'The release title (e.g. Release v1.0.0) ', args: [{ name: 'title', required: true }], onProcess: promptIfUndefinedOr(promptTitle) },
+  { name: ['-v', '--version'], description: 'The release version (e.g. v1.0.0)', args: [{ name: 'version', required: true }], onProcess: promptIfUndefinedOr(promptVersion) },
+  { name: ['-t', '--title'], description: 'The release title (e.g. Release v1.0.0)', args: [{ name: 'title', required: true }], onProcess: promptIfUndefinedOr(promptTitle) },
   { name: ['-c', '--changelog'], description: 'Path to the changelog file', args: [{ name: 'path' }], onProcess: promptIfUndefinedOr(promptChangelogPath) },
   { name: ['-r', '--repo'], description: 'The repository name ', args: [{ name: 'repo', required: true }], onProcess: promptIfUndefinedOr(promptRepository) },
   { name: ['-b', '--branch'], description: 'The branch name to create a release from', defaultValue: 'main', args: [{ name: 'branch' }], onProcess: promptIfUndefinedOr(promptBranch) },
-  { name: ['-oa', '--access-token'], description: 'The GitHub access token ', args: [{ name: 'token', required: true }], onProcess: promptIfUndefinedOr(promptAccessToken) },
-  { name: ['-d', '--draft'], description: 'Create a draft release', defaultValue: true, negatable: true, onProcess: promptIfUndefinedOr(promptDraft, true) },
-  { name: ['-p', '--pre-release'], description: 'Create a pre-release', defaultValue: false, onProcess: promptIfUndefinedOr(promptPrerelease, false) },
+  { name: ['-oa', '--access-token'], description: `The GitHub access token ${info('(see https://tinyurl.com/bdvkvu29)')}`, args: [{ name: 'token', required: true }], onProcess: promptIfUndefinedOr(promptAccessToken) },
+  { name: ['-d', '--draft'], description: 'Create a draft release', onProcess: promptIfUndefinedOr(promptDraft) },
+  { name: ['-p', '--pre-release'], description: 'Create a pre-release', onProcess: promptIfUndefinedOr(promptPrerelease) },
   { name: ['-a', '--assets'], description: 'List of paths to asset files', args: [{ name: 'paths', variadic: true }], onProcess: promptIfUndefinedOr(promptAssets) }
 ]
 
