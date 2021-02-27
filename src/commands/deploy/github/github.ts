@@ -7,6 +7,8 @@ import { sep } from 'path'
 import { http } from '../../../http'
 import { dryRunReleaseInfo } from './dry'
 import { AxiosRequestConfig } from 'axios'
+import { promptIfUndefined } from '../../../utils'
+import { promptAccessToken, promptAssets, promptBranch, promptChangelogPath, promptDraft, promptPrerelease, promptRepository, promptTitle, promptVersion } from './prompts'
 
 interface DeployGitHubOptions extends DeployOptions {
   version: string
@@ -32,15 +34,15 @@ export interface GitHubReleaseInfo {
 }
 
 const options: Option[] = [
-  { name: ['-v', '--version'], description: 'The release version (e.g. v1.0.0) ', required: true, args: [{ name: 'version', required: true }] },
-  { name: ['-t', '--title'], description: 'The release title (e.g. Release v1.0.0) ', required: true, args: [{ name: 'title', required: true }] },
-  { name: ['-c', '--changelog'], description: 'Path to the changelog file', args: [{ name: 'path' }] },
-  { name: ['-r', '--repo'], description: 'The repository name ', required: true, args: [{ name: 'repo', required: true }] },
-  { name: ['-b', '--branch'], description: 'The branch name to create a release from', defaultValue: 'main', args: [{ name: 'branch' }] },
-  { name: ['-oa', '--access-token'], description: 'The GitHub access token ', required: true, args: [{ name: 'token', required: true }] },
-  { name: ['-d', '--draft'], description: 'Create a draft release', defaultValue: true, negatable: true },
-  { name: ['-p', '--pre-release'], description: 'Create a pre-release', defaultValue: false },
-  { name: ['-a', '--assets'], description: 'List of paths to asset files', defaultValue: [], args: [{ name: 'paths', variadic: true }] }
+  { name: ['-v', '--version'], description: 'The release version (e.g. v1.0.0) ', args: [{ name: 'version', required: true }], onProcess: promptIfUndefined(promptVersion) },
+  { name: ['-t', '--title'], description: 'The release title (e.g. Release v1.0.0) ', args: [{ name: 'title', required: true }], onProcess: promptIfUndefined(promptTitle) },
+  { name: ['-c', '--changelog'], description: 'Path to the changelog file', args: [{ name: 'path' }], onProcess: promptIfUndefined(promptChangelogPath) },
+  { name: ['-r', '--repo'], description: 'The repository name ', args: [{ name: 'repo', required: true }], onProcess: promptIfUndefined(promptRepository) },
+  { name: ['-b', '--branch'], description: 'The branch name to create a release from', defaultValue: 'main', args: [{ name: 'branch' }], onProcess: promptIfUndefined(promptBranch) },
+  { name: ['-oa', '--access-token'], description: 'The GitHub access token ', args: [{ name: 'token', required: true }], onProcess: promptIfUndefined(promptAccessToken) },
+  { name: ['-d', '--draft'], description: 'Create a draft release', defaultValue: true, negatable: true, onProcess: promptIfUndefined(promptDraft) },
+  { name: ['-p', '--pre-release'], description: 'Create a pre-release', defaultValue: false, onProcess: promptIfUndefined(promptPrerelease) },
+  { name: ['-a', '--assets'], description: 'List of paths to asset files', defaultValue: [], args: [{ name: 'paths', variadic: true }], onProcess: promptIfUndefined(promptAssets) }
 ]
 
 const buildReleaseRequestData = (opts: DeployGitHubOptions): any => ({

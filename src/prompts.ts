@@ -1,5 +1,6 @@
 // @ts-ignore
-import { MultiSelect, Select, Confirm, Input } from 'enquirer'
+import { MultiSelect, Select, Confirm, Input, Password } from 'enquirer'
+import { existsSync } from 'fs'
 import { icons, muted, say, success, warn } from './presentation'
 
 export type Choice<T> = {
@@ -79,14 +80,50 @@ const input = async (
     validate: validate,
   })
 
-  const answer = await prompt.run()
-
-  return answer
+  const result = await prompt.run()
+  return result
 }
 
-export const prompt = {
+const password = async (
+  message: string,
+  validate?: (...[value, state, item, index]: any[]) => boolean | string | Promise<boolean | string>
+): Promise<string> => {
+  const prompt = new Password({
+    name: 'x',
+    message: say(message, 'info', false),
+    validate: validate
+  })
+
+  const result = await prompt.run()
+  return result
+}
+
+const path = async (
+  message: string,
+  initial?: string
+): Promise<string> => {
+  const prompt = new Input({
+    name: 'x',
+    message: say(message, 'info', false),
+    initial: initial,
+    validate: (value): any => {
+      if (!existsSync(value)) {
+        return 'Path does not exist'
+      } else {
+        return true
+      }
+    }
+  })
+
+  const result = await prompt.run()
+  return result
+}
+
+export const prompts = {
   select,
   checkbox,
+  password,
   confirm,
-  input
+  input,
+  path
 }
