@@ -17,8 +17,8 @@ export const getMissingPropertyPath = (object: any, expected: any, propertyPath:
   return undefined
 }
 
-export const promptIfUndefined = (prompt: () => Promise<any>): OnProcessHook => async (value, input, assign): Promise<void> => {
-  if (value === undefined) {
+export const promptIfUndefinedOr = (prompt: () => Promise<any>, ...cases: any[]): OnProcessHook => async (value, input, assign): Promise<void> => {
+  if (value === undefined || cases.includes(value)) {
     await assign(await prompt())
   }
 }
