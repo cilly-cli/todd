@@ -1,5 +1,5 @@
 import { CliCommand } from 'cilly'
-import { info } from '../../presentation'
+import { yellow } from '../../presentation'
 import { linux } from './linux/linux'
 import { macos } from './macos/macos'
 import { windows } from './windows/windows'
@@ -15,7 +15,7 @@ export const packer = new CliCommand('packer')
   .withDescription('Package an executable into an installer')
   .withOptions(
     { name: ['-v', '--verbose'], description: 'Print verbosely' },
-    { name: ['-d', '--dry-run'], description: `Run as a dry run ${info('(nothing will be changed)')}` },
+    { name: ['-d', '--dry-run'], description: `Run as a dry run ${yellow('(nothing will be changed)')}` },
     {
       name: ['-o', '--out-dir'], description: 'Output directory for the installer', defaultValue: './', args: [
         { name: 'path', required: true }

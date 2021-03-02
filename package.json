@@ -13,7 +13,7 @@
     "prebuild": "rm -rf dist",
     "build": "tsc",
     "postbuild": "echo '#!/usr/bin/env node\n' | cat - dist/src/bin/todd.js > temp && mv temp dist/src/bin/todd.js",
-    "start": "ts-node src/bin/todd.ts",
+    "start": "NODE_ENV=development ts-node src/bin/todd.ts",
     "prepublish": "npm run build"
   },
   "repository": {

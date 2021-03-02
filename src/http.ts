@@ -1,9 +1,9 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { Global } from './global'
-import { yellow } from './presentation'
+import { verbose, yellow } from './presentation'
 
 export class HttpException extends Error {
-  constructor(method: string | undefined, code: number, data: any) {
+  constructor(public method: string | undefined, public code: number, public data: any) {
     super(`${method} ${code}: ${JSON.stringify(data)}`)
   }
 }
@@ -22,9 +22,8 @@ const throwOnError = async <T>(
 }
 
 const request = async <T>(method: string, fnc: any, url: string, ...args: any[]): Promise<T> => {
-  if (Global.verbose) {
-    console.log(`${yellow.bold('HTTP:')} ${method} ${url}`)
-  }
+  const msg = (Global.dryRun ? '[DRY RUN] ' : '') + `${yellow.bold('HTTP:')} ${method} ${url}`
+  verbose(msg)
 
   if (Global.dryRun) {
     return {} as T

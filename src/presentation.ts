@@ -1,4 +1,5 @@
 import chalk from 'chalk'
+import { Global } from './global'
 
 const colors = {
   info: '#6EC1E4',
@@ -55,4 +56,10 @@ export const say = (msg: string, mode: 'info' | 'success' | 'warning' | 'error' 
   }
 
   return msg
+}
+
+export const verbose = (msg: any): void => {
+  if (Global.verbose) {
+    console.log(msg)
+  }
 }

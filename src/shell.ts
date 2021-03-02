@@ -1,11 +1,10 @@
 import { Global } from './global'
-import { yellow } from './presentation'
+import { verbose, yellow } from './presentation'
 import shelljs from 'shelljs'
 
 const run = (command: string): shelljs.ShellString | null => {
-  if (Global.verbose) {
-    console.log(`${yellow.bold('Shell:')} ${command}`)
-  }
+  const msg = (Global.dryRun ? '[DRY RUN] ' : '') + `${yellow.bold('Shell:')} ${command}`
+  verbose(msg)
 
   if (Global.dryRun) return null
 

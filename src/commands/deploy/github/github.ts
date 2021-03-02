@@ -1,7 +1,7 @@
 import { CliCommand, Option } from 'cilly'
 import { DeployOptions } from '../deploy'
-import { info, say } from '../../../presentation'
-import { readFileSync } from 'fs'
+import { say, verbose, yellow } from '../../../presentation'
+import { readFileSync, writeFileSync } from 'fs'
 import { Global } from '../../../global'
 import { sep } from 'path'
 import { http } from '../../../http'
@@ -20,6 +20,7 @@ interface DeployGitHubOptions extends DeployOptions {
   draft: boolean
   preRelease: boolean
   assets: string[]
+  out: string
 }
 
 export interface GitHubReleaseInfo {
@@ -37,12 +38,13 @@ const options: Option[] = [
   { name: ['-v', '--version'], description: 'The release version (e.g. v1.0.0)', args: [{ name: 'version', required: true }], onProcess: promptIfUndefinedOr(promptVersion) },
   { name: ['-t', '--title'], description: 'The release title (e.g. Release v1.0.0)', args: [{ name: 'title', required: true }], onProcess: promptIfUndefinedOr(promptTitle) },
   { name: ['-c', '--changelog'], description: 'Path to the changelog file', args: [{ name: 'path', required: true }], onProcess: promptIfUndefinedOr(promptChangelogPath) },
-  { name: ['-r', '--repo'], description: 'The repository name ', args: [{ name: 'repo', required: true }], onProcess: promptIfUndefinedOr(promptRepository) },
+  { name: ['-r', '--repo'], description: 'The repository owner/name', args: [{ name: 'repo', required: true }], onProcess: promptIfUndefinedOr(promptRepository) },
   { name: ['-b', '--branch'], description: 'The branch name to create a release from', defaultValue: 'main', args: [{ name: 'branch', required: true }], onProcess: promptIfUndefinedOr(promptBranch) },
-  { name: ['-oa', '--access-token'], description: `The GitHub access token ${info('(see https://tinyurl.com/bdvkvu29)')}`, args: [{ name: 'token', required: true }], onProcess: promptIfUndefinedOr(promptAccessToken) },
+  { name: ['-oa', '--access-token'], description: `The GitHub access token ${yellow('(see https://tinyurl.com/bdvkvu29)')}`, args: [{ name: 'token', required: true }], onProcess: promptIfUndefinedOr(promptAccessToken) },
   { name: ['-d', '--draft'], description: 'Create a draft release', onProcess: promptIfUndefinedOr(promptDraft) },
   { name: ['-p', '--pre-release'], description: 'Create a pre-release', onProcess: promptIfUndefinedOr(promptPrerelease) },
-  { name: ['-a', '--assets'], description: 'List of paths to asset files', args: [{ name: 'paths', variadic: true }], onProcess: promptIfUndefinedOr(promptAssets) }
+  { name: ['-a', '--assets'], description: 'List of paths to asset files', args: [{ name: 'paths', variadic: true }], onProcess: promptIfUndefinedOr(promptAssets) },
+  { name: ['-o', '--out'], description: 'Name of file to dump release info to', defaultValue: 'release.json', negatable: true, args: [{ name: 'file', required: true }] }
 ]
 
 const buildReleaseRequestData = (opts: DeployGitHubOptions): any => ({
@@ -78,9 +80,10 @@ const uploadAsset = async (path: string, releaseInfo: GitHubReleaseInfo, accessT
   const file = path.split(sep).pop()
   const url = `${releaseInfo.upload_url}?name=${file}`
   const config: AxiosRequestConfig = {
+    maxBodyLength: Infinity,
     headers: {
       'Authorization': `token ${accessToken}`,
-      'Content-Type': 'multipart/form-data'
+      'Content-Type': 'application/gzip'
     }
   }
 
@@ -100,11 +103,13 @@ export const github = new CliCommand('github', { inheritOpts: true })
 
     say(`Successfully created release ${opts.title}!`, 'success')
 
-    if (Global.verbose) {
-      console.log(releaseInfo)
-    }
+    verbose(releaseInfo)
 
     for (const asset of opts.assets) {
       await uploadAsset(asset, releaseInfo, opts.accessToken)
+    }
+
+    if (opts.out) {
+      writeFileSync(opts.out, JSON.stringify(releaseInfo, null, 2))
     }
   })
